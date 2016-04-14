@@ -1,6 +1,6 @@
 import random
 import re
-#from sudoku import sudoku_game
+import string
 import sudoku
 
 # import argparse
@@ -16,33 +16,36 @@ class SudokuBot(Bot):
 
     def __init__(self):
         self.command_words = ["play", "go", "start"]
-        self.input_words = ["guess"]
+        self.guess_words = ["guess"]
+        self.inGame = False
 
     def printrow(self, row):
         self.say(self.factory.channel, "{0} [{1}] [{2}] [{3}]   [{4}] [{5}] [{6}]   [{7}] [{8}] [{9}]\n".format(row, game.outArray[row - 1][0], game.outArray[row - 1][1], game.outArray[row - 1][2], game.outArray[row - 1][3], game.outArray[row - 1][4], game.outArray[row - 1][5], game.outArray[row - 1][6], game.outArray[row - 1][7], game.outArray[row - 1][8]))
         
     def command(self, prefix, msg):
         play = False
-        guess = False
-        for com in self.command_words:
-            if com in msg.lower():
-                play = True
-        if play:
-            self.play(prefix)
-            
-        for com2 in self.input_words:
-            #self.say(self.factory.channel, com2)
-            if com2 in msg.lower():
-                guess = True
-        if guess:
-            self.guess(prefix)
+        #guess = False
+        if not self.inGame:
+            for com in self.command_words:
+                if com in msg.lower():
+                    play = True
+            if play:
+                self.play(prefix)
+        #else:
+        #    for com2 in self.guess_words:
+        #        if com2 in msg.lower():
+        #            guess = True
+        #    if guess:
+        #        self.guess(prefix)
             
             
     def play(self, prefix):
+        self.inGame = True
         self.say(self.factory.channel, "Honorable sudoku starts now!")
         game.play_sudoku()
+        self.drawBoard(prefix)
+    def drawBoard(self, prefix):
         self.say(self.factory.channel, "   A   B   C     D   E   F     G   H   I")
-        #self.say(self.factory.channel, " \ __ __ __ __ __ __ __ __ __")
         for row in range(1, 4):
             self.printrow(row)
         sleep(1)
@@ -55,20 +58,53 @@ class SudokuBot(Bot):
             self.printrow(row)
         #self.say(self.factory.channel, "                             \n")
 
-    def guess(self, prefix):
-        self.say(self.factory.channel, prefix + ", ayy lmao")
+    def guess(self, prefix, msg):
+        if self.inGame:
+            guessValueRegex = re.compile("^([1-9])\s+(?:in){0,1}\s*([a-i])([1-9])$")
+            guessValueSearch = guessValueRegex.search(msg.strip().lower())
+            if guessValueSearch is not None:
+                guessValue = int(guessValueSearch.group(1))
+                guessRow = int(guessValueSearch.group(3)) - 1
+                guessColumn = string.lowercase.index(guessValueSearch.group(2))
+
+                #self.say(self.factory.channel, prefix + "You guessed" + msg)
+                #self.say(self.factory.channel, "Value guessed: " + str(guessValue))
+                #self.say(self.factory.channel, "Row: " + str(guessRow))
+                #self.say(self.factory.channel, "Column: " + str(guessColumn))
+
+                if game.outArray[guessRow][guessColumn] != '_':
+                    self.say(self.factory.channel, prefix + "You guessed an already revealed tile, ya dingus!")
+                elif guessValue == int(game.answerArray[guessRow][guessColumn]):
+                    self.say(self.factory.channel, prefix + "a winner is you! :^)")
+                    game.outArray[guessRow][guessColumn] = str(guessValue)
+                    self.drawBoard(prefix)
+                else:
+                    self.say(self.factory.channel, prefix + "wrong again you are! :^(")
+                self.checkIfOver(prefix, msg)
+    def checkIfOver(self, prefix, msg):
+        if not any('_' in cell for cell in game.outArray):
+            self.inGame = False
+            self.say(self.factory.channel, "The game is ogre!")
     
     def privmsg(self, user, channel, msg):
         if not user:
             return
         com_regex = re.compile(self.first_name + "[ _]" + self.last_name + "[:,]* ?", re.I)
+        guess_regex = re.compile("^(guess|answer)")
+        prefix = "%s: " % (user.split("!", 1)[0], )
         if com_regex.search(msg):
             msg = com_regex.sub("", msg)
-            prefix = "%s: " % (user.split("!", 1)[0], )
-        else:
-            prefix = ""
-        if prefix:
             self.command(prefix, msg)
+        elif guess_regex.search(msg):
+            msg = guess_regex.sub("", msg)
+            self.guess(prefix, msg)
+        else: 
+            prefix = ""
+            #prefix = "%s: " % (user.split("!", 1)[0], )
+        #else:
+        #    prefix = ""
+        #if prefix:
+            #self.command(prefix, msg)
 
 
 class SudokuBotFactory(BotFactory):
