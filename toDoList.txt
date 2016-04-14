@@ -1,0 +1,4 @@
+-some sort of buffer for multiple guesses (halt printage, receive guesses, update table and print)
+-add insults
+-add points
+-difficulty setting?
