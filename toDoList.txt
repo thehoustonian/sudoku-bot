@@ -2,3 +2,4 @@
 -add insults
 -add points
 -difficulty setting?
+-sudoku bot help

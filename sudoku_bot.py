@@ -17,6 +17,7 @@ class SudokuBot(Bot):
     def __init__(self):
         self.command_words = ["play", "go", "start"]
         self.guess_words = ["guess"]
+        self.help_words = ["help"]
         self.inGame = False
 
     def printrow(self, row):
@@ -24,8 +25,16 @@ class SudokuBot(Bot):
         
     def command(self, prefix, msg):
         play = False
-        #guess = False
-        if not self.inGame:
+        helpMsg = False
+        
+        for hel in self.help_words:
+            if hel in msg.lower():
+                helpMsg = True
+        
+        if helpMsg:
+            self.say(self.factory.channel, "What? You actually need me to explain this to you? Ugh. Fine. Let me explain like you're 5. Actually, let's make that 3 instead. Big box. Lots of boxes in box. 9 lines of boxes going up/down and left/right. 9 small boxes inside bigger box. We use numbers 1 through 9. Numbers go in box. Only one of each number in each row, column, or small box. This isn't theCount, you might actually have to use your brain. Guess with 'guess 1 in a1', except don't actually guess that unless you know there's a 1 in a1. Idiot.")
+        
+        elif not self.inGame:
             for com in self.command_words:
                 if com in msg.lower():
                     play = True
@@ -44,6 +53,7 @@ class SudokuBot(Bot):
         self.say(self.factory.channel, "Honorable sudoku starts now!")
         game.play_sudoku()
         self.drawBoard(prefix)
+        
     def drawBoard(self, prefix):
         self.say(self.factory.channel, "   A   B   C     D   E   F     G   H   I")
         for row in range(1, 4):
@@ -75,16 +85,16 @@ class SudokuBot(Bot):
                 if game.outArray[guessRow][guessColumn] != '_':
                     self.say(self.factory.channel, prefix + "You guessed an already revealed tile, ya dingus!")
                 elif guessValue == int(game.answerArray[guessRow][guessColumn]):
-                    self.say(self.factory.channel, prefix + "a winner is you! :^)")
+                    self.say(self.factory.channel, prefix + "Correct you are~!")
                     game.outArray[guessRow][guessColumn] = str(guessValue)
                     self.drawBoard(prefix)
                 else:
-                    self.say(self.factory.channel, prefix + "wrong again you are! :^(")
+                    self.say(self.factory.channel, prefix + "WRONG, SHAME AND DISHONOR UPON YOU")
                 self.checkIfOver(prefix, msg)
     def checkIfOver(self, prefix, msg):
         if not any('_' in cell for cell in game.outArray):
             self.inGame = False
-            self.say(self.factory.channel, "The game is ogre!")
+            self.say(self.factory.channel, "You have honored your ancestors by committing this great act.")
     
     def privmsg(self, user, channel, msg):
         if not user:
