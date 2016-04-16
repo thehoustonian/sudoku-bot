@@ -2,4 +2,4 @@
 -add insults
 -add points
 -difficulty setting?
--sudoku bot help
+-print table command -- Done, just need to make sure this can't be abused

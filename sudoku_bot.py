@@ -18,6 +18,7 @@ class SudokuBot(Bot):
         self.command_words = ["play", "go", "start"]
         self.guess_words = ["guess"]
         self.help_words = ["help"]
+	self.print_words = ["print","printboard", "board"]
         self.inGame = False
 
     def printrow(self, row):
@@ -26,10 +27,15 @@ class SudokuBot(Bot):
     def command(self, prefix, msg):
         play = False
         helpMsg = False
+	printBoard = False
         
         for hel in self.help_words:
             if hel in msg.lower():
                 helpMsg = True
+
+	for prnt in self.print_words:
+	    if prnt in msg.lower():
+		printBoard = True
         
         if helpMsg:
             self.say(self.factory.channel, "What? You actually need me to explain this to you? Ugh. Fine. Let me explain like you're 5. Actually, let's make that 3 instead. Big box. Lots of boxes in box. 9 lines of boxes going up/down and left/right. 9 small boxes inside bigger box. We use numbers 1 through 9. Numbers go in box. Only one of each number in each row, column, or small box. This isn't theCount, you might actually have to use your brain. Guess with 'guess 1 in a1', except don't actually guess that unless you know there's a 1 in a1. Idiot.")
@@ -40,6 +46,10 @@ class SudokuBot(Bot):
                     play = True
             if play:
                 self.play(prefix)
+
+	elif printBoard:
+	    self.drawBoard(prefix)
+
         #else:
         #    for com2 in self.guess_words:
         #        if com2 in msg.lower():
@@ -125,8 +135,8 @@ class SudokuBotFactory(BotFactory):
 
 
 if __name__ == "__main__":
-    host = "coop.test.adtran.com"
+    host = "chat.freenode.net"
     port = 6667
-    chan = "Sudoku_Room" # "THE_MAGIC_CONCH_ROOM" "test" 
+    chan = "dingus123" #"Sudoku_Room" # "THE_MAGIC_CONCH_ROOM" "test" 
     reactor.connectTCP(host, port, SudokuBotFactory("#" + chan, "Sudoku"))
     reactor.run()
